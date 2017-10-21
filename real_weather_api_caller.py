@@ -18,13 +18,13 @@ class RealWeatherAPICaller(SampleWeatherAPICaller):
 
     def retrieve_data(self):
         # use real API and real key
-        # IMPORTANT: USE REAL API LINK BEFORE FINISHING this project
-        #REAL_OW_API = "http://api.openweathermap.org/data/2.5/group?id={city_ids}&appid={api_key}&units=metric"
-        FAKE_OW_API = "http://samples.openweathermap.org/data/2.5/group?id=524901,703448,2643743&units=metric&appid=b1b15e88fa797225412429c1c50c122a1"
+        REAL_OW_API = "http://api.openweathermap.org/data/2.5/group?id={city_ids}&appid={api_key}&units=metric"
+        #FAKE_OW_API = "http://samples.openweathermap.org/data/2.5/group?id=524901,703448,2643743&units=metric&appid=b1b15e88fa797225412429c1c50c122a1"
 
         ids = [self.__class__.SG_ID, self.__class__.HK_ID]
         city_ids = ",".join(map(lambda x:str(x), ids))
-        url = FAKE_OW_API.format(city_ids=city_ids, api_key=self.api_key)
+        url = REAL_OW_API.format(city_ids=city_ids, api_key=self.api_key)
+        #url = FAKE_OW_API.format(city_ids=city_ids, api_key=self.api_key)
 
         try:
             group_data = self._processGroupData(url)
@@ -35,8 +35,9 @@ class RealWeatherAPICaller(SampleWeatherAPICaller):
             raise e
 
         time_str = datetime.now().isoformat(timespec='seconds')
+        print("New data obtained. Going to add new record to db after retrieval at {}".format(time_str))
+
         for d in group_data:
-            print("Going to add new record to db after retrieval at {}".format(time_str))
             self._insert_db(time_str, d)
 
     def _processGroupData(self, group_url):

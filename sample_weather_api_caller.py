@@ -46,8 +46,8 @@ class SampleWeatherAPICaller(object):
         # Note: can't specify format on sample API
         SAMPLE_API = "http://samples.openweathermap.org/data/2.5/weather?id={city_id}&appid=b1b15e88fa797225412429c1c50c122a1"
 
-        sg_sample_url = SAMPLE_API.format(city_id=SG_ID)
-        hk_sample_url = SAMPLE_API.format(city_id=HK_ID)
+        sg_sample_url = SAMPLE_API.format(city_id=self.__class__.SG_ID)
+        hk_sample_url = SAMPLE_API.format(city_id=self.__class__.HK_ID)
 
         try:
             raw_sg_data = requests.get(sg_sample_url).json()
