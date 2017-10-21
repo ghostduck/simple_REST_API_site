@@ -38,3 +38,5 @@ One of the requirement is to call the API every minute. In order to not to get b
 
 Change the variable **fake** to **True** in *server.py* `fake = True` to use fake mode, which will only get sample/fake data from API.
 
+If you are using paid plans, feel free to change the duration in `def keep_retrieve_data():` in `server.py`.
+
