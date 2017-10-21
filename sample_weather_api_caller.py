@@ -88,6 +88,7 @@ class SampleWeatherAPICaller(object):
             ON `weather_records`.city_id = `city_shortname`.id
             WHERE city_id = ?
             AND datetime(record_time) BETWEEN datetime(?) AND datetime(?)
+            ORDER BY datetime(record_time) DESC
         """
 
         try:
