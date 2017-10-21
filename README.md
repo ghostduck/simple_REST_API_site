@@ -8,7 +8,7 @@ This is my second interview test of writing a RESTful API + α recently
 # Instructions
 Clone this repo, then copy **_config/template.json_** to **_config/keys.json_**.
 
-After that, paste your [OpenWeather API key](https://home.openweathermap.org/api_keys) to replace the value of weatherkey.
+After that, paste your [OpenWeatherMap API key](https://home.openweathermap.org/api_keys) to replace the value of weatherkey.
 
 Once the key setup is completed, the server is ready to use.
 
