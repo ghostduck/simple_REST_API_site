@@ -20,7 +20,9 @@ The model is `cw_source`, which can be `RealWeatherAPICaller` or `SampleWeatherA
 
 For the requirement of "calling API to update entries in database", it is achieved by making another thread to update every 10 minutes in `keep_retrieve_data()`.
 
-Before the server runs the HTTP server, the `timerThread` will start first. It will call `keep_retrieve_data()`. `keep_retrieve_data()` will create another timed thread (`threading.Timer`) to call itself. Both `timerThread` and `keep_retrieve_data()` are daemon, so they will all ends when the main thread (http server) ends.
+Before the server runs the HTTP server, the `timerThread` will start first. It will call `keep_retrieve_data()`. `keep_retrieve_data()` will create another timed thread (`threading.Timer`) to call itself. 
+
+Both `timerThread` and `keep_retrieve_data()` are daemon, so they will all ends when the main thread (http server) ends.
 
 The server will end by pressing Ctrl+C to interrupt.
 
