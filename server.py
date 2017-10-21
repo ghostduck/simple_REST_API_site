@@ -169,6 +169,8 @@ def keep_retrieve_data():
     print("Going to retrieve data from external source now")
     cw_source.retrieve_data()
 
+    # Minor note: cannot use kwargs to set Timer to daemon, will raise unknown keyword error
+    # But Timer is a subclass of Thread ...
     t = threading.Timer(630.0, keep_retrieve_data)
     if fake:
         print("Fake mode now, can repeat retrieve data in every 30 secs")

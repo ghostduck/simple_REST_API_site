@@ -17,7 +17,6 @@ if __name__ == '__main__':
 
     normal_payload = {"city": "HK", "start": start_time, "end" : end_time}
     data = requests.get(API_URL, params=normal_payload)
-    print(data)
     d = data.json()
     print("These are the weather date of HK from 2017-10-21 8AM to 8:30AM" )
     print(d)
@@ -59,5 +58,7 @@ if __name__ == '__main__':
     all_payload = {"city": "HK", "start": epoch_time, "end" : now_time}
     # http://127.0.0.1:8000/weather?city=HK&start=1970-01-01T12%3A00%3A00&end=2017-10-21T21%3A19%3A09
     data = requests.get(API_URL, params=all_payload).json()
-    print("These are all the weather date of HK" )
+    print("These are all the weather data of HK" )
     print(data)
+
+    print("End of test program")
