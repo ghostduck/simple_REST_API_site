@@ -14,7 +14,7 @@ Once the key setup is completed, the server is ready to use.
 
 Start the server by executing *server.py*. The server should be available at http://127.0.0.1:8000/weather .
 
-In order to obtain data from this RESTful server, you need to provide the following parameters using *GET*:
+In order to obtain data from this RESTful server, you need to provide ALL the following parameters using *GET*:
 - city  : currently only has 'hk' or 'sg'. Case dosen't matter. Other cities will return a 404 not found
 - start : Timestamp in format of YYYY-MM-DDTHH:MM:SS (Example: 2017-10-21T23:35:45)
 - end   : Same as above. Make sure start is before end, otherwise a 400 error will be returned
