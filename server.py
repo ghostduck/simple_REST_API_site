@@ -65,37 +65,35 @@ def city_weather_full_view(environ, start_response):
     try:
         data_source = cw_source
 
-        # parse arguments from environ
-        path = environ.get('PATH_INFO')
-
-        options = {}
-
         # parse query string
         q_s = environ.get('QUERY_STRING')
-        if q_s:
-            query = parse_qs(q_s, strict_parsing=True)
+        if not q_s:
+            raise ValueError("Please provide parameter of city, start and end")
 
-            for k,v in query.items():
-                # only want 1 thing from query string
-                query[k] = v[0]
+        query = parse_qs(q_s, strict_parsing=True)
+        # normally will raise if there is no query string, but we handled it above
 
-            start = query.get("start")
-            end = query.get("end")
-            city_short_name = query.get("city")
+        for k,v in query.items():
+            # only want 1 thing from query string
+            query[k] = v[0]
 
-            if (start is None) or (end is None):
-                raise ValueError("Need both start and end date")
+        start = query.get("start")
+        end = query.get("end")
+        city_short_name = query.get("city")
 
-            start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S")
-            end = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S")
+        if (start is None) or (end is None):
+            raise ValueError("Need both start and end date")
 
-            if start > end:
-                raise ValueError("Start time is after End time")
+        start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S")
+        end = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S")
 
-            if (city_short_name is None):
-                raise ValueError("City shortname is not provided")
+        if start > end:
+            raise ValueError("Start time is after End time")
 
-            city_short_name = city_short_name.lower()
+        if (city_short_name is None):
+            raise ValueError("City shortname is not provided")
+
+        city_short_name = city_short_name.lower()
 
         # get city weather data
         data = data_source.get_db_records(city_short_name, start, end)
