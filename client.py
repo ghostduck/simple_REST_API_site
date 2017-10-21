@@ -49,10 +49,15 @@ if __name__ == '__main__':
     status_code = requests.get(API_URL, params=no_end_time_payload).status_code
     print(status_code, status_code == 400)
 
+    # error case: no payload
+    status_code = requests.get(API_URL).status_code
+    print(status_code, status_code == 400)
+
     # print everything in HK
     epoch_time = datetime(1970, 1, 1, 12, 0, 0).isoformat(timespec='seconds')
     now_time =  datetime.now().isoformat(timespec='seconds')
     all_payload = {"city": "HK", "start": epoch_time, "end" : now_time}
+    # http://127.0.0.1:8000/weather?city=HK&start=1970-01-01T12%3A00%3A00&end=2017-10-21T21%3A19%3A09
     data = requests.get(API_URL, params=all_payload).json()
     print("These are all the weather date of HK" )
     print(data)
