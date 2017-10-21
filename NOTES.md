@@ -46,3 +46,10 @@ This time only 2 tables are needed, namely `weather_records` and `city_shortname
 `city_shortname` stores the shortname and id in OpenWeatherMap. (check README.md for details)
 
 I feel that the current database schema is good enough for this toy project, but not sure if it is optimal or not.
+
+# Something else
+I write the API callers from scratch, and keep testing while writing the codes.
+
+I also need to spend sometime waiting for the 10 mins cooldown for real API calls. 3 hours seems very harsh.
+
+I started at Friday night and finished at Saturday night.
