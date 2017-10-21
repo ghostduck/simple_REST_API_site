@@ -14,6 +14,15 @@ from datetime import datetime
 # 3. Use fake sample data every minute, since they fixed city ids in group call
 # 3rd method is used here
 
+class CustomError(Exception):
+     def __init__(self, value=""):
+         self.value = value
+     def __str__(self):
+         return repr(self.value)
+
+class CityNotFoundError(CustomError):
+    pass
+
 class SampleWeatherAPICaller(object):
 
     API_KEY_PATH = "config/keys.json"
@@ -54,6 +63,7 @@ class SampleWeatherAPICaller(object):
         hk_data = self._parse_single_city_data(raw_hk_data)
 
         time_str = datetime.now().isoformat(timespec='seconds')
+        print("Going to add new (sample fake) records to db after retrieval at {}".format(time_str))
 
         self._insert_db(time_str, sg_data, "sg")
         self._insert_db(time_str, hk_data, "hk")
@@ -63,26 +73,30 @@ class SampleWeatherAPICaller(object):
         end_time=datetime.now().isoformat(timespec='seconds')
         ):
         # return array of matching records
+
         # setup
-        city_id = self.city_id_name_map.get(city, 0)
+        # city is the short name (hk/sg)
+        # search city_id from database
+        city_id = self._get_city_id_from_db(city)
         # can directly return empty array if invalid city_id is found actually, but just leave it here in case of new cities
 
         tuple_for_sql =  (city_id, start_time, end_time)
         sql_select_command = r"""
-            SELECT city_id, record_time, temperature, humidity, shortname
+            SELECT record_time, temperature, humidity
             FROM `weather_records`
             JOIN `city_shortname`
-            ON `weather_records`.city_id == `city_shortname`.id
-            WHERE city_id == ?
+            ON `weather_records`.city_id = `city_shortname`.id
+            WHERE city_id = ?
             AND datetime(record_time) BETWEEN datetime(?) AND datetime(?)
         """
 
         try:
             with sqlite3.connect(self.__class__.DB_PATH) as connection:
                 records = connection.execute(sql_select_command, tuple_for_sql).fetchall()
+                print("Get data from database successfully")
                 return records
         except sqlite3.Error as e:
-            print("Errors when inserting to datebase: ")
+            print("Errors when getting record from datebase: ")
             print(e.args[0])
             raise e
 
@@ -151,3 +165,21 @@ class SampleWeatherAPICaller(object):
         weather_data = (data["main"]["temp"], data["main"]["humidity"], data["id"])
         return weather_data
 
+    def _get_city_id_from_db(self, city):
+        tuple_for_sql =  (city, )
+        sql_select_command = r"""
+            SELECT id
+            FROM `city_shortname`
+            WHERE shortname = ?
+        """
+        try:
+            with sqlite3.connect(self.__class__.DB_PATH) as connection:
+                records = connection.execute(sql_select_command, tuple_for_sql).fetchone()
+        except sqlite3.Error as e:
+            print("Errors when searching city id in datebase: ")
+            print(e.args[0])
+            raise e
+
+        if records is None:
+            raise CityNotFoundError("Cannot find city")
+        return records[0]

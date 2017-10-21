@@ -36,6 +36,7 @@ class RealWeatherAPICaller(SampleWeatherAPICaller):
 
         time_str = datetime.now().isoformat(timespec='seconds')
         for d in group_data:
+            print("Going to add new record to db after retrieval at {}".format(time_str))
             self._insert_db(time_str, d)
 
     def _processGroupData(self, group_url):
