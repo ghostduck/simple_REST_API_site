@@ -4,13 +4,13 @@
 from wsgiref.simple_server import make_server
 import re
 import json
-from weather_data_source import WeatherDataSource, DataUnavailableError, CityNotFoundError
-from urllib.parse import unquote
-#from cgi import parse_qs
+from datetime import datetime
+from sample_weather_api_caller import CityNotFoundError
+from real_weather_api_caller import RealWeatherAPICaller
 from urllib.parse import parse_qs
 
 # data source of city weather
-cw_source = WeatherDataSource()
+cw_source = RealWeatherAPICaller()
 
 # handlers for errors
 def city_not_found(environ, start_response):
@@ -62,18 +62,11 @@ def city_weather_full_view(environ, start_response):
     status = '200 OK'
     headers = [('Content-type', 'application/json; charset=utf-8')]
 
-    # Simulate forced server side error
-    error = False
-
     try:
         data_source = cw_source
 
         # parse arguments from environ
-        #
-        # https://bugs.python.org/issue16679
-        # Can't deal with unicode directly, needs to be ISO-8859-1 -> Byte -> Unicode
         path = environ.get('PATH_INFO')
-        npath = bytearray(path, 'iso-8859-1').decode('utf8')
 
         options = {}
 
@@ -82,35 +75,39 @@ def city_weather_full_view(environ, start_response):
         if q_s:
             query = parse_qs(q_s, strict_parsing=True)
 
-            if query.get("error") == ["1"]:
-                error = True
-                del query["error"]
-
             for k,v in query.items():
                 # only want 1 thing from query string
                 query[k] = v[0]
 
-            options["format"] = query
+            start = query.get("start")
+            end = query.get("end")
+            city_short_name = query.get("city")
 
-        pattern = r'^\/api\/\d+\/weather\/([^\/]+)+$'
-        cityname_searcher = re.compile(pattern, re.UNICODE)
-        cityname = cityname_searcher.search(npath).group(1).lower()
+            if (start is None) or (end is None):
+                raise ValueError("Need both start and end date")
+
+            start = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S")
+            end = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S")
+
+            if start > end:
+                raise ValueError("Start time is after End time")
+
+            if (city_short_name is None):
+                raise ValueError("City shortname is not provided")
+
+            city_short_name = city_short_name.lower()
 
         # get city weather data
-        data = data_source.getCityData(cityname, options, error)
+        data = data_source.get_db_records(city_short_name, start, end)
 
         # output
         start_response(status, headers)
         return [json.dumps(data).encode("utf-8")]
 
+    # Custom errors
     except CityNotFoundError:
         return city_not_found(environ, start_response)
-    except DataUnavailableError:
-        return internal_error(environ, start_response)
     except ValueError as e:
-        # print(type(e))
-        # print(e.args)
-        # most likely an error in unitConversion()
         environ["custom_error_message"] = repr(e)
         return general_value_error(environ, start_response)
 
@@ -119,6 +116,14 @@ class APIApplication(object):
     def __init__(self, application):
         self.application = application
         self.setup_routes()
+
+    def setup_routes(self):
+        # map route to a view
+        self.routes = [
+           # e.g. /weather
+           (r'^\/weather$', city_weather_full_view),
+           (r'^\/favicon.ico', favicon)
+        ]
 
     def __call__(self, environ, start_response):
         # main logic for the API Application
@@ -132,19 +137,6 @@ class APIApplication(object):
         handler = self.find_route(npath)
 
         return handler(environ, start_response)
-
-    def setup_routes(self):
-        # map route to a view
-        self.routes = [
-           # e.g. /api/1/weather/hk/status
-           #(r'^\/api\/\d+\/weather\/\w+\/\w+$', city_weather_attribute_view),
-
-           # e.g. /api/1/weather/warsaw
-           #r'^\/api\/\d+\/weather\/[^\/]+$'
-           #r'^\/api\/\d+\/weather\/\w+$'
-           (r'^\/api\/\d+\/weather\/[^\/]+$', city_weather_full_view),
-           (r'^\/favicon.ico', favicon)
-        ]
 
     def find_route(self, path):
         # no checking for conflicting routes currently
