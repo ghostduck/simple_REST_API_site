@@ -14,7 +14,7 @@ I hope it runs well on your Linux machines.
 # server.py
 The router + controller is in `class APIApplication()` in `server.py`. Since we have only 1 route this time, the route is very simple.
 
-The controller + view which returns the JSON is in `def city_weather_full_view` in `server.py`. It checks the parameters (query string), raise exceptions then redirect to other views if needed.
+The controller + view which returns the JSON is in `def city_weather_full_view()` in `server.py`. It checks the parameters (query string), raise exceptions then redirect to other views if needed.
 
 The model is `cw_source`, which can be `RealWeatherAPICaller` or `SampleWeatherAPICaller` by turning fake mode on or off.
 
