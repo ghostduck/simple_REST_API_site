@@ -5,12 +5,17 @@ from wsgiref.simple_server import make_server
 import re
 import json
 from datetime import datetime
-from sample_weather_api_caller import CityNotFoundError
+from sample_weather_api_caller import SampleWeatherAPICaller, CityNotFoundError
 from real_weather_api_caller import RealWeatherAPICaller
 from urllib.parse import parse_qs
+import threading
 
+fake = False
 # data source of city weather
 cw_source = RealWeatherAPICaller()
+if fake:
+    print("Fake mode now, use SampleWeatherAPICaller as source")
+    cw_source = SampleWeatherAPICaller() # fake one
 
 # handlers for errors
 def city_not_found(environ, start_response):
@@ -160,7 +165,24 @@ def simple_app(environ, start_response):
            for key, value in environ.items()]
     return ret
 
+def keep_retrieve_data():
+    print("Going to retrieve data from external source now")
+    cw_source.retrieve_data()
+
+    t = threading.Timer(630.0, keep_retrieve_data)
+    if fake:
+        print("Fake mode now, can repeat retrieve data in every 30 secs")
+        t = threading.Timer(30.0, keep_retrieve_data) # for fake one
+
+    t.daemon = True
+    t.start()
+
 if __name__ == '__main__':
+    print("WARNING: Keep restarting server when fake is False can result in BAN of the API Key")
+    timerThread = threading.Thread(target=keep_retrieve_data)
+    timerThread.daemon = True
+    timerThread.start()
+
     with make_server('', 8000, APIApplication(simple_app)) as httpd:
         print("Serving on port 8000...")
         httpd.serve_forever()
